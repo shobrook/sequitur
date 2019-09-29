@@ -11,7 +11,7 @@ encoder, decoder, embeddings, f_loss  = QuickEncode(sequences, embedding_dim=2)
 encoder([13,14,15,16]) # => [0.19, 0.84]
 ```
 
-<!--An autoencoder will learn how to-->`sequitur` will learn how to represent sequences of any length as lower-dimensional, fixed-size vectors. This can be useful for finding patterns among sequences, clustering, converting sequences into inputs for a machine learning algorithm, and dimensionality reduction.
+`sequitur` will learn how to represent sequences of any length as lower-dimensional, fixed-size vectors. This can be useful for finding patterns among sequences, clustering, converting sequences into inputs for a machine learning algorithm, and dimensionality reduction.
 
 ## Installation
 
