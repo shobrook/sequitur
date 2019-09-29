@@ -35,7 +35,7 @@ from sequitur.autoencoders import RAE
 
 `sequitur` also provides an implementation of a Stacked Autoencoder (SAE) and a WIP Variational Autoencoder (VAE). <!--If you've implemented or know of an implementation of a sequence autoencoder, please feel free to add it to the codebase and open a pull request. With enough autoencoders, I will turn `sequitur` into a small PyTorch extension library.-->
 
-### `sequitur.QuickEncode(sequences, embedding_dim, logging=False, lr=1e-3, epochs=100)`
+#### `sequitur.QuickEncode(sequences, embedding_dim, logging=False, lr=1e-3, epochs=100)`
 
 Wraps a PyTorch implementation of an Encoder-Decoder architecture with an LSTM, making this optimal for sequences with long-term dependencies (e.g. time series data).
 
@@ -58,11 +58,11 @@ Wraps a PyTorch implementation of an Encoder-Decoder architecture with an LSTM, 
 - `embeddings`: A tensor of shape `[num_seqs, embedding_dim]` which holds the learned vector encodings of each sequence in the training set.
 - `f_loss`: The final mean squared error of the autoencoder on the training set.
 
-### `sequitur.autoencoders.RAE(hyperparams)`
+#### `sequitur.autoencoders.RAE(hyperparams)`
 
 TODO.
 
-### `sequitur.autoencoders.SAE(hyperparams)`
+#### `sequitur.autoencoders.SAE(hyperparams)`
 
 TODO.
 
