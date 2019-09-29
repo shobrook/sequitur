@@ -9,81 +9,83 @@ import torch.nn as nn
 
 
 class Encoder(nn.Module):
-    def __init__(self, num_features, embedding_size=64):
+    def __init__(self, seq_len, num_features, embedding_dim=64):
         super(Encoder, self).__init__()
 
-        self.embedding_size = embedding_size
+        self.seq_len, self.num_features = seq_len, num_features
+        self.embedding_dim, self.hidden_dim = embedding_dim, 2 * embedding_dim
+
         self.rnn1 = nn.LSTM(
             input_size=num_features,
-            hidden_size=128,
+            hidden_size=self.hidden_dim,
             num_layers=1,
             batch_first=True
         )
         self.rnn2 = nn.LSTM(
-            input_size=128,
-            hidden_size=embedding_size,
+            input_size=self.hidden_dim,
+            hidden_size=embedding_dim,
             num_layers=1,
             batch_first=True
         )
 
     def forward(self, x):
+        x = x.reshape((1, self.seq_len, self.num_features))
+
         x, (hidden_n, cell_n) = self.rnn1(x)
         x, (hidden_n, cell_n) = self.rnn2(x)
 
-        return hidden_n.reshape((1, self.embedding_size))
-
-
-class Bridge(nn.Module):
-    def __init__(self, num_timesteps):
-        super(Bridge, self).__init__()
-
-        self.num_timesteps = num_timesteps
-
-    def forward(self, x):
-        x = x.repeat(self.num_timesteps, 1)
-
-        return x.reshape((1, self.num_timesteps, 64))
+        return hidden_n.reshape((1, self.embedding_dim))
 
 
 class Decoder(nn.Module):
-    def __init__(self, num_timesteps, output_dim=1, num_features=64):
+    def __init__(self, seq_len, input_dim=64, output_dim=1):
         super(Decoder, self).__init__()
 
-        self.num_timesteps, self.output_dim = num_timesteps, output_dim
+        self.seq_len, self.input_dim = seq_len, input_dim
+        self.hidden_dim, self.output_dim = 2 * input_dim, output_dim
+
         self.rnn1 = nn.LSTM(
-            input_size=num_features,
-            hidden_size=num_features,
+            input_size=input_dim,
+            hidden_size=input_dim,
             num_layers=1,
             batch_first=True
         )
         self.rnn2 = nn.LSTM(
-            input_size=num_features,
-            hidden_size=128,
+            input_size=input_dim,
+            hidden_size=self.hidden_dim,
             num_layers=1,
             batch_first=True
         )
 
-        self.layers = [nn.Linear(128, output_dim) for _ in range(num_timesteps)]
-        self.output_layers = nn.ModuleList(self.layers)
+        # self.perceptrons = nn.ModuleList()
+        # for _ in range(seq_len):
+        #     self.perceptrons.append(nn.Linear(self.hidden_dim, output_dim))
 
-        # self.output = torch.tensor(128, output_dim, requires_grad=True)
+        self.dense_layers = torch.rand(
+            (self.hidden_dim, output_dim),
+            dtype=torch.float,
+            requires_grad=True
+        )
 
     def forward(self, x):
+        x = x.repeat(self.seq_len, 1)
+        x = x.reshape((1, self.seq_len, self.input_dim))
+
         x, (hidden_n, cell_n) = self.rnn1(x)
         x, (hidden_n, cell_n) = self.rnn2(x)
-        x = x.reshape((self.num_timesteps, 128))
+        x = x.reshape((self.seq_len, self.hidden_dim))
 
-        output_seq = torch.empty(
-            self.num_timesteps,
-            self.output_dim,
-            dtype=torch.float
-        )
-        for t, mlp in zip(range(self.num_timesteps), self.output_layers):
-            output_seq[t] = mlp(x[t])
+        # output_seq = torch.empty(
+        #     self.seq_len,
+        #     self.output_dim,
+        #     dtype=torch.float
+        # )
+        # for index, perceptron in zip(range(self.seq_len), self.perceptrons):
+        #     output_seq[index] = perceptron(x[index])
+        #
+        # return output_seq
 
-        return output_seq
-
-        # return torch.mm(x, self.output)
+        return torch.mm(x, self.dense_layers)
 
 
 #########
@@ -92,16 +94,17 @@ class Decoder(nn.Module):
 
 
 class RAE(nn.Module):
-    def __init__(self, num_timesteps, num_features, embedding_size=64):
-        super(Autoencoder, self).__init__()
+    def __init__(self, seq_len, num_features, embedding_dim=64):
+        super(RAE, self).__init__()
 
-        self.encoder = Encoder(num_features)
-        self.bridge = Bridge(num_timesteps)
-        self.decoder = Decoder(num_timesteps, num_features, embedding_size)
+        self.seq_len, self.num_features = seq_len, num_features
+        self.embedding_dim = embedding_dim
+
+        self.encoder = Encoder(seq_len, num_features, embedding_dim)
+        self.decoder = Decoder(seq_len, embedding_dim, num_features)
 
     def forward(self, x):
         x = self.encoder(x)
-        x = self.bridge(x)
         x = self.decoder(x)
 
         return x
