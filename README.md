@@ -48,15 +48,15 @@ Lets you train an autoencoder with just one line of code. This wraps a PyTorch i
 
 #### `sequitur.autoencoders.RAE(hyperparams)`
 
-TODO.
+To-Do.
 
 #### `sequitur.autoencoders.SAE(hyperparams)`
 
-TODO.
+To-Do.
 
 ### `sequitur.autoencoders.VAE(hyperparams)`
 
-TODO.
+To-Do.
 
 ## Contributing
 
