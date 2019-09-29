@@ -1,1 +1,1 @@
-from core import QuickEncode
+from .core import QuickEncode
