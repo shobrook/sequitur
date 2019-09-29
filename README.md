@@ -11,33 +11,21 @@ encoder, decoder, embeddings, f_loss  = QuickEncode(sequences, embedding_dim=2)
 encoder([13,14,15,16]) # => [0.19, 0.84]
 ```
 
-An autoencoder will learn how to represent sequences of any length as lower-dimensional, fixed-size vectors. This can be useful for finding patterns among sequences, clustering, converting sequences into inputs for a machine learning algorithm, and dimensionality reduction.
+<!--An autoencoder will learn how to-->`sequitur` will learn how to represent sequences of any length as lower-dimensional, fixed-size vectors. This can be useful for finding patterns among sequences, clustering, converting sequences into inputs for a machine learning algorithm, and dimensionality reduction.
 
 ## Installation
 
 > Requires Python 3.X and PyTorch 1.2.X
 
-You can install `sequitur` with pip:
+You can download a compiled binary [here](https://github.com/shobrook/sequitur/) or install `sequitur` with pip:
 
 `$ pip install sequitur`
 
-or download a compiled binary [here.](https://github.com/shobrook/sequitur/)
-
 ## API
-
-`sequitur` provides a master function called `QuickEncode`, which lets you train an autoencoder with just one line of code. This is useful for rapid prototyping but doesn't allow for much customization.
-
-If you want more control over the model, you can simply import the PyTorch implementation of the RAE, like so:
-
-```python
-from sequitur.autoencoders import RAE
-```
-
-`sequitur` also provides an implementation of a Stacked Autoencoder (SAE) and a WIP Variational Autoencoder (VAE). <!--If you've implemented or know of an implementation of a sequence autoencoder, please feel free to add it to the codebase and open a pull request. With enough autoencoders, I will turn `sequitur` into a small PyTorch extension library.-->
 
 #### `sequitur.QuickEncode(sequences, embedding_dim, logging=False, lr=1e-3, epochs=100)`
 
-Wraps a PyTorch implementation of an Encoder-Decoder architecture with an LSTM, making this optimal for sequences with long-term dependencies (e.g. time series data).
+Lets you train an autoencoder with just one line of code. This wraps a PyTorch implementation of an Encoder-Decoder architecture with an LSTM, making this optimal for sequences with long-term dependencies (e.g. time series data).
 
 **Parameters**
 
@@ -69,6 +57,12 @@ TODO.
 ### `sequitur.autoencoders.VAE(hyperparams)`
 
 TODO.
+
+## Contributing
+
+`QuickEncode` is useful for rapid prototyping but doesn't give you much control over the model and training process. For that, you can import the RAE implementation itself from `sequitur.autoencoders`.
+
+`sequitur` not only implements an RAE but also a Stacked Autoencoder (SAE) and a WIP Variational Autoencoder (VAE). If you've implemented a sequence autoencoder, or know of an implementation, please feel free to add it to the codebase and open a pull request. With enough autoencoders, I can turn `sequitur` into a small PyTorch extension library.
 
 <!--Provide proof that it's generally effective-->
 
