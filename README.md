@@ -54,7 +54,7 @@ To-Do.
 
 To-Do.
 
-### `sequitur.autoencoders.VAE(hyperparams)`
+#### `sequitur.autoencoders.VAE(hyperparams)`
 
 To-Do.
 
