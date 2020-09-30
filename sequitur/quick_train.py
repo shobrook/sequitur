@@ -15,6 +15,7 @@ from models import StackedAE, RecurrentAE, RecurrentConvAE
 
 
 def instantiate_model(model, train_set, encoding_dim, **kwargs):
+    # TODO: train_set is a list of tensors, not a tensor
     if isinstance(model, (StackedAE, RecurrentAE)):
         return model(train_set.shape[-1], encoding_dim, **kwargs)
     elif isinstance(model, RecurrentConvAE):
@@ -40,12 +41,10 @@ def train_model(model, train_set, verbose, lr, epochs):
         #         param_group["lr"] = lr * (0.993 ** epoch)
 
         losses = []
-        for i in range(train_set.shape[0]):
+        for x in train_set:
             optimizer.zero_grad()
 
             # Forward pass
-            # x = train_set[i].to(device)
-            x = train_set[i]
             x_prime = model(x)
 
             loss = criterion(x_prime, x)
@@ -67,12 +66,7 @@ def train_model(model, train_set, verbose, lr, epochs):
 
 def get_encodings(model, train_set):
     model.eval()
-
-    encodings = []
-    for i in range(train_set.shape[0]):
-        x = train_set[i]
-        encodings.append(model.encoder(x))
-
+    encodings = [model.encoder(x) for x in train_set]
     return encodings
 
 

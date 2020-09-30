@@ -1,6 +1,6 @@
 # sequitur
 
-`sequitur` is a collection of autoencoders for different types of sequence data, ranging from sequences of numbers to sequences of images. It's built on PyTorch and meant to be very simple to use –– training and using an autoencoder takes only two lines of code:
+`sequitur` is a collection of autoencoders for different types of sequence data, ranging from sequences of numbers to sequences of images. It's built on PyTorch and very simple to use –– training and using an autoencoder takes only two lines of code:
 
 ```python
 import torch
