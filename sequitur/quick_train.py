@@ -3,11 +3,10 @@ from statistics import mean
 
 # Third Party
 import torch
-from torch.autograd import Variable
-from torch.nn import CrossEntropyLoss, MSELoss
+from torch.nn import MSELoss
 
 # Local Modules
-from autoencoders import RAE, SAE
+from models import StackedAE, RecurrentAE, RecurrentConvAE
 
 
 ###########
@@ -15,90 +14,77 @@ from autoencoders import RAE, SAE
 ###########
 
 
-def prepare_dataset(sequences):
-    if type(sequences) == list:
-        dataset = []
-        for sequence in sequences:
-            updated_seq = []
-            for vec in sequence:
-                if type(vec) == list:
-                    updated_seq.append([float(elem) for elem in vec])
-                else: # Sequence is 1-D
-                    updated_seq.append([float(vec)])
+def instantiate_model(model, train_set, encoding_dim, **kwargs):
+    if isinstance(model, (StackedAE, RecurrentAE)):
+        return model(train_set.shape[-1], encoding_dim, **kwargs)
+    elif isinstance(model, RecurrentConvAE):
+        # TODO: Handle in_channels != 1
+        if len(train_set.shape) == 4: # 2D elements
+            return model(train_set.shape[-2:], encoding_dim, )
+        elif len(train_set.shape) == 5: # 3D elements
+            return
 
-            dataset.append(torch.tensor(updated_seq))
-    elif type(sequences) == torch.tensor:
-        dataset = [sequences[i] for i in range(len(sequences))]
-
-    shape = torch.stack(dataset).shape
-    assert(len(shape) == 3)
-
-    return dataset, shape[1], shape[2]
-
-
-def train_model(model, dataset, lr, epochs, logging):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def train_model(model, train_set, verbose, lr, epochs):
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    # criterion = CrossEntropyLoss()
     criterion = MSELoss(size_average=False)
 
+    mean_losses = []
     for epoch in range(1, epochs + 1):
         model.train()
 
-        # Reduces learning rate every 50 epochs
-        if not epoch % 50:
-            for param_group in optimizer.param_groups:
-                param_group["lr"] = lr * (0.993 ** epoch)
+        # # Reduces learning rate every 50 epochs
+        # if not epoch % 50:
+        #     for param_group in optimizer.param_groups:
+        #         param_group["lr"] = lr * (0.993 ** epoch)
 
-        losses, embeddings = [], []
-        for seq_true in dataset:
+        losses = []
+        for i in range(train_set.shape[0]):
             optimizer.zero_grad()
 
             # Forward pass
-            seq_true.to(device)
-            seq_pred = model(seq_true)
+            # x = train_set[i].to(device)
+            x = train_set[i]
+            x_prime = model(x)
 
-            loss = criterion(seq_pred, seq_true)
+            loss = criterion(x_prime, x)
 
             # Backward pass
             loss.backward()
             optimizer.step()
 
             losses.append(loss.item())
-            embeddings.append(seq_pred)
 
-        if logging:
-            print("Epoch: {}, Loss: {}".format(str(epoch), str(mean(losses))))
+        mean_loss = mean(losses)
+        mean_losses.append(mean_loss)
 
-    return embeddings, mean(losses)
+        if verbose:
+            print(f"Epoch: {epoch}, Loss: {mean_loss}")
 
-
-#########
-# EXPORTS
-#########
+    return mean_losses
 
 
-def QuickEncode(sequences, encoding_size, logging=False, lr=1e-3, epochs=500):
-    dataset, seq_len, num_features = prepare_dataset(sequences)
-    model = RAE(seq_len, num_features, encoding_size)
-    embeddings, f_loss = train_model(model, dataset, lr, epochs, logging)
+def get_encodings(model, train_set):
+    model.eval()
 
-    return model.encoder, model.decoder, embeddings, f_loss
+    encodings = []
+    for i in range(train_set.shape[0]):
+        x = train_set[i]
+        encodings.append(model.encoder(x))
+
+    return encodings
 
 
-if __name__ == "__main__":
-    sequences = [list(range(i, i + 4)) for i in range(100)]
-    # sequences = [[1,2,3,4], [5,6,7,8], [9,10,11,12]]
-    encoder, decoder, embeddings, f_loss = QuickEncode(
-        sequences,
-        embedding_dim=3,
-        logging=True,
-        epochs=100
-    )
+######
+# MAIN
+######
 
-    test_encoding = encoder(torch.tensor([[13.0], [14.0], [15.0], [16.0]]))
-    test_decoding = decoder(test_encoding)
 
-    print()
-    print(test_encoding)
-    print(test_decoding)
+def quick_train(model, train_set, encoding_dim, verbose=False, lr=1e-3,
+                epochs=50, **kwargs):
+    model = instantiate_model(model, train_set, encoding_dim, **kwargs)
+    losses = train_model(model, train_set, verbose, lr, epochs)
+    encodings = get_encodings(model, train_set)
+
+    return model.encoder, model.decoder, encodings, losses
