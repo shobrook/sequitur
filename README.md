@@ -1,73 +1,181 @@
 # sequitur
 
-`sequitur` is a Recurrent Autoencoder (RAE) for sequence data that works out-of-the-box. It's easy to configure and only takes one line of code to use.
+`sequitur` is a collection of autoencoders for different types of sequence data, ranging from sequences of numbers to sequences of images. It's built on PyTorch and meant to be very simple to use –– training and using an autoencoder takes only two lines of code:
 
 ```python
-from sequitur import QuickEncode
+import torch
+from sequitur.models import StackedAE
+from sequitur import quick_train
 
-sequences = [[1,2,3,4], [5,6,7,8], [9,10,11,12]]
-encoder, decoder, embeddings, f_loss  = QuickEncode(sequences, embedding_dim=2)
+train_seqs = [
+  torch.tensor([1, 2, 3, 4]),
+  torch.tensor([5, 6, 7, 8]),
+  torch.tensor([9, 10, 11, 12])
+]
+encoder, decoder, _, _ = quick_train(StackedAE, train_seqs, encoding_dim=2)
 
-encoder([13,14,15,16]) # => [0.19, 0.84]
+encoder(torch.tensor([13, 14, 15, 16])) # => torch.tensor([0.19, 0.84])
 ```
 
-`sequitur` will learn how to represent sequences of any length as lower-dimensional, fixed-size vectors. This can be useful for finding patterns among sequences, clustering, converting sequences into inputs for a machine learning algorithm, and dimensionality reduction.
+Each autoencoder learns to represent input sequences as lower-dimensional, fixed-size vectors. This can be useful for finding patterns among sequences, clustering sequences, and converting sequences into inputs for other algorithms.
+
+TODO: Show visual of time series plot -> vector encoding -> reconstructed plot
 
 ## Installation
 
 > Requires Python 3.X and PyTorch 1.2.X
 
-You can download a compiled binary [here](https://github.com/shobrook/sequitur/) or install `sequitur` with pip:
+You can install `sequitur` with `pip`:
 
 `$ pip install sequitur`
 
+## Getting Started
+
+How to choose an autoencoder depends on the nature of your data. If you're working with sequences of numbers (e.g. time series data) or 1D vectors (e.g. word vectors), then you should use the `StackedAE` or `RecurrentAE` model. For sequences of 2D matrices (e.g. videos) or 3D matrices (e.g. fMRI scans), you'll want to use `RecurrentConvAE`. Each model is a PyTorch module, and can be imported like so:
+
+```python
+from sequitur.models import RecurrentConvAE
+```
+
+Next, you need to prepare a set of sequences to train the autoencoder on. This training set should be a list of `torch.Tensor`s with shape `[num_examples, seq_len, *num_features]`. For example, if your training set consisted of 100 sequences, each with 10 5x5 matrices, then it would have shape `[100, 10, 5, 5]`. From here, you can either initialize the model yourself and write your own training loop, or import the `quick_train` function and plug in the model, training set, and desired encoding size, like so:
+
+```python
+import torch
+from sequitur.models import RecurrentConvAE
+from sequitur import quick_train
+
+train_set = [torch.randn(10, 5, 5) for _ in range(100)]
+encoder, decoder, _, _ = quick_train(RecurrentConvAE, train_set, encoding_dim=4)
+```
+
+After training, `quick_train` returns the `encoder` and `decoder` models, which are PyTorch modules that can encode and decode new sequences. These can be used like so:
+
+```python
+x = torch.randn(10, 5, 5)
+
+encoding = encoder(x) # Returns torch.Tensor of shape [4, ]
+decoding = decoder(encoding) # Returns torch.Tensor of shape [10, 5, 5]
+```
+
 ## API
 
-#### `sequitur.QuickEncode(sequences, embedding_dim, logging=False, lr=1e-3, epochs=100)`
+### quick_train
 
-Lets you train an autoencoder with just one line of code. This wraps a PyTorch implementation of an Encoder-Decoder architecture with an LSTM, making this optimal for sequences with long-term dependencies (e.g. time series data).
+**`quick_train(model, train_set, encoding_dim, verbose=False, lr=1e-3, epochs=50, \*\*kwargs)`**
 
-**Parameters**
+Lets you train an autoencoder with just one line of code. Useful if you don't want to create your own training loop. Training involves learning a vector encoding of each input sequence, reconstructing the original sequence from the encoding, and calculating the loss (mean-squared error) between the reconstructed input and the original input. The autoencoder weights are updated using the Adam optimizer.
 
-- `sequences`: A list (or tensor) of shape `[num_seqs, seq_len, num_features]` representing your training set of sequences.
-  - Each sequence should have the same length, `seq_len`, and contain a sequence of vectors of size `num_features`.
-  - If `num_features=1`, then you can input a list of shape `[num_seqs, seq_len]` instead.
-- `embedding_dim`: Size of the vector encodings you want to create.
-- `logging`: Boolean for whether you want logging statements to be printed during training.
-- `lr`: Learning rate for the autoencoder.
-- `epochs`: Number of epochs to train for.
+**Parameters:**
 
-**Returns**
+- `model` _(torch.nn.Module)_: Autoencoder model to train (imported from `sequitur.models`)
+- `train_set` _(list)_: List of sequences (each a `torch.Tensor`) to train the model on; has shape `[num_examples, seq_len, *num_features]`
+- `encoding_dim` _(int)_: Desired size of the vector encoding
+- `verbose` _(bool, optional (default=False))_: Whether or not to print the loss at each epoch
+- `lr` _(float, optional (default=1e-3))_: Learning rate
+- `epochs` _(int, optional (default=50))_: Number of epochs to train for
+- `**kwargs`: Parameters to pass into `model` when it's instantiated
 
-- `encoder`: The trained encoder as a PyTorch module.
-  - Takes as input a tensor of shape `[seq_len, num_features]` representing a sequence where each element is a vector of size `num_features`.
-- `decoder`: The trained decoder as a PyTorch module.
-  - Takes as input a tensor of shape `[embedding_dim]` representing an encoded sequence.
-- `embeddings`: A tensor of shape `[num_seqs, embedding_dim]` which holds the learned vector encodings of each sequence in the training set.
-- `f_loss`: The final mean squared error of the autoencoder on the training set.
+**Returns:**
 
-#### `sequitur.autoencoders.RAE(hyperparams)`
+- `encoder` _(torch.nn.Module)_: Trained encoder model; takes a sequence (as a tensor) as input and returns an encoding of the sequence as a tensor of shape `[encoding_dim, ]`
+- `decoder` _(torch.nn.Module)_: Trained decoder model; takes an encoding (as a tensor) and returns a decoded sequence
+- `encodings` _(list)_: List of tensors corresponding to the final vector encodings of each sequence in the training set
+- `losses` _(list)_: List of average MSE values at each epoch
 
-To-Do.
+### Models
 
-#### `sequitur.autoencoders.SAE(hyperparams)`
+Every autoencoder inherits from `torch.nn.Module` and has an `encoder` attribute and a `decoder` attribute, both of which also inherit from `torch.nn.Module`.
 
-To-Do.
+#### StackedAE
 
-#### `sequitur.autoencoders.VAE(hyperparams)`
+**`StackedAE(input_dim, encoding_dim, h_dims=[], h_activ=torch.nn.Sigmoid(), out_activ=torch.nn.Tanh())`**
 
-To-Do.
+Consists of fully-connected layers stacked on top of each other. Can only be used if you're dealing with sequences of numbers, not vectors or matrices.
 
-## Contributing
+<img src="./stacked_ae.png" />
 
-`QuickEncode` is useful for rapid prototyping but doesn't give you much control over the model and training process. For that, you can import the RAE implementation itself from `sequitur.autoencoders`.
+**Parameters:**
 
-`sequitur` not only implements an RAE but also a Stacked Autoencoder (SAE) and a WIP Variational Autoencoder (VAE). If you've implemented a sequence autoencoder, or know of an implementation, please feel free to add it to the codebase and open a pull request. With enough autoencoders, I can turn `sequitur` into a small PyTorch extension library.
+- `input_dim` _(int)_: Size of each input sequence
+- `encoding_dim` _(int)_: Size of the vector encoding
+- `h_dims` _(list, optional (default=[]))_: List of hidden layer sizes for the encoder
+- `h_activ` _(torch.nn.Module or None, optional (default=torch.nn.Sigmoid()))_: Activation function to use for hidden layers; if `None`, no activation function is used
+- `out_activ` _(torch.nn.Module or None, optional (default=torch.nn.Tanh()))_: Activation function to use for the output layer in the encoder; if `None`, no activation function is used
 
-<!--Provide proof that it's generally effective-->
+**Example:**
 
-<!-- https://github.com/szagoruyko/pytorchviz
-https://github.com/RobRomijnders/AE_ts
-https://github.com/erickrf/autoencoder
-https://miro.medium.com/max/1400/1*sWc8g2yiQrOzntbVeGzbEQ.png
-https://arxiv.org/pdf/1502.04681.pdf -->
+To create the autoencoder shown in the diagram above, use the following arguments:
+
+```python
+from sequitur.models import StackedAE
+
+model = StackedAE(
+  input_dim=5,
+  encoding_dim=2,
+  h_dims=[4, 3],
+  h_activ=None,
+  out_activ=None
+)
+```
+
+#### RecurrentAE
+
+**`RecurrentAE(input_dim, encoding_dim, h_dims=[], h_activ=torch.nn.Sigmoid(), out_activ=torch.nn.Tanh())`**
+
+Autoencoder for sequences of 1D vectors which consists of stacked LSTMs. Can be trained on sequences of varying length.
+
+<img src="./recurrent_ae.png" />
+
+**Parameters:**
+
+- `input_dim` _(int)_: Size of each sequence element (vector)
+- `encoding_dim` _(int)_: Size of the vector encoding
+- `h_dims` _(list, optional (default=[]))_: List of hidden layer sizes for the encoder
+- `h_activ` _(torch.nn.Module or None, optional (default=torch.nn.Sigmoid()))_: Activation function to use for hidden layers; if `None`, no activation function is used
+- `out_activ` _(torch.nn.Module or None, optional (default=torch.nn.Tanh()))_: Activation function to use for the output layer in the encoder; if `None`, no activation function is used
+
+**Example:**
+
+To create the autoencoder shown in the diagram above, use the following arguments:
+
+```python
+from sequitur.models import RecurrentAE
+
+model = RecurrentAE(
+  input_dim=2,
+  encoding_dim=64,
+  h_dims=[128],
+  h_activ=None,
+  out_activ=None
+)
+```
+
+Note that the `model.decoder` module requires an argument in addition to a vector encoding, `seq_len`, to decode a sequence. For example:
+
+```python
+import torch
+
+x = torch.randn(10, 5)
+encoding = model.encoder(x)
+x_prime = model.decoder(encoding, seq_len=10)
+```
+
+#### RecurrentConvAE
+
+**`RecurrentConvAE(input_dims, encoding_dim, in_channels, h_conv_channels=[], h_lstm_channels=[], kernel=None, stride=None)`**
+
+Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-LSTM architecture described in the paper _[Beyond Short Snippets: Deep Networks for Video Classification](https://arxiv.org/pdf/1503.08909.pdf)._
+
+**Parameters:**
+
+- `input_dims` _(list)_: Shape of each 2D or 3D image in the input sequences
+- `encoding_dim` _(int)_: Size of the vector encoding
+- `in_channels` _(int)_: Number of channels in each image
+- `kernel` _(tuple or None, optional (default=None))_: TODO
+- `stride` _(tuple or None, optional (default=None))_: TODO
+- `h_conv_channels` _(list, optional (default=[]))_: List of hidden channel sizes for the convolutional layers
+- `h_lstm_channels` _(list, optional (default=[]))_: List of hidden channel sizes for the LSTM layers
+
+**Example:**
+
+<!--Video -> vector -> Reconstructed video -->
