@@ -27,7 +27,9 @@ Each autoencoder learns to represent input sequences as lower-dimensional, fixed
 
 You can install `sequitur` with `pip`:
 
-`$ pip install sequitur`
+```bash
+$ pip install sequitur
+```
 
 ## Getting Started
 
@@ -59,7 +61,7 @@ x_prime = decoder(encoding) # Returns torch.Tensor of shape [10, 5, 5]
 
 ## API
 
-### quick_train
+#### quick_train
 
 **`quick_train(model, train_set, encoding_dim, verbose=False, lr=1e-3, epochs=50, \*\*kwargs)`**
 
@@ -94,6 +96,8 @@ Consists of fully-connected layers stacked on top of each other. Can only be use
 
 <img src="./stacked_ae.png" />
 
+TODO: Make your own diagram
+
 **Parameters:**
 
 - `input_dim` _(int)_: Size of each input sequence
@@ -125,6 +129,8 @@ model = StackedAE(
 Autoencoder for sequences of 1D vectors which consists of stacked LSTMs. Can be trained on sequences of varying length.
 
 <img src="./recurrent_ae.png" />
+
+TODO: Make your own diagram
 
 **Parameters:**
 
