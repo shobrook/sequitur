@@ -1,6 +1,6 @@
 # sequitur
 
-`sequitur` is a collection of autoencoders for different types of sequence data, ranging from sequences of numbers to sequences of images. It's built on PyTorch and very simple to use –– training and using an autoencoder takes only two lines of code:
+`sequitur` is a small library of autoencoders for different types of sequence data, ranging from sequences of numbers to sequences of images. It's built on PyTorch and very simple to use –– training and using an autoencoder takes only two lines of code:
 
 ```python
 import torch
@@ -19,7 +19,7 @@ encoder(torch.tensor([13, 14, 15, 16])) # => torch.tensor([0.19, 0.84])
 
 Each autoencoder learns to represent input sequences as lower-dimensional, fixed-size vectors. This can be useful for finding patterns among sequences, clustering sequences, and converting sequences into inputs for other algorithms.
 
-TODO: Show visual of time series plot -> vector encoding -> reconstructed plot
+<img src="./demo.png" />
 
 ## Installation
 
@@ -54,7 +54,7 @@ After training, `quick_train` returns the `encoder` and `decoder` models, which 
 x = torch.randn(10, 5, 5)
 
 encoding = encoder(x) # Returns torch.Tensor of shape [4, ]
-decoding = decoder(encoding) # Returns torch.Tensor of shape [10, 5, 5]
+x_prime = decoder(encoding) # Returns torch.Tensor of shape [10, 5, 5]
 ```
 
 ## API
@@ -164,7 +164,9 @@ x_prime = model.decoder(encoding, seq_len=10)
 
 **`RecurrentConvAE(input_dims, encoding_dim, in_channels, h_conv_channels=[], h_lstm_channels=[], kernel=None, stride=None)`**
 
-Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-LSTM architecture described in the paper _[Beyond Short Snippets: Deep Networks for Video Classification](https://arxiv.org/pdf/1503.08909.pdf)._
+Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-LSTM architecture described in the paper _[Beyond Short Snippets: Deep Networks for Video Classification](https://arxiv.org/pdf/1503.08909.pdf)._ Uses a CNN to create vector encodings of each image in an input sequence, and then an LSTM to create encodings of the sequence of vectors.
+
+TODO: Add diagram
 
 **Parameters:**
 
@@ -178,4 +180,14 @@ Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-
 
 **Example:**
 
-<!--Video -> vector -> Reconstructed video -->
+```python
+from sequitur.models import RecurrentConvAE
+
+model = RecurrentConvAE(
+  input_dims=[5, 5],
+  encoding_dim=16,
+  in_channels=1,
+  kernel=(2, 2),
+  stride=(1, 1),
+)
+```
