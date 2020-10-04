@@ -54,8 +54,8 @@ After training, `quick_train` returns the `encoder` and `decoder` models, which 
 
 ```python
 x = torch.randn(10, 5, 5)
-h_x = encoder(x) # Tensor with shape [4]
-x_prime = decoder(h_x) # Tensor with shape [10, 5, 5]
+z = encoder(x) # Tensor with shape [4]
+x_prime = decoder(z) # Tensor with shape [10, 5, 5]
 ```
 
 ## API
@@ -113,9 +113,9 @@ To create the autoencoder shown in the diagram above, use the following argument
 from sequitur.models import StackedAE
 
 model = StackedAE(
-  input_dim=5,
-  encoding_dim=2,
-  h_dims=[4, 3],
+  input_dim=10,
+  encoding_dim=4,
+  h_dims=[8, 6],
   h_activ=None,
   out_activ=None
 )
@@ -145,9 +145,9 @@ To create the autoencoder shown in the diagram above, use the following argument
 from sequitur.models import RecurrentAE
 
 model = RecurrentAE(
-  input_dim=2,
-  encoding_dim=64,
-  h_dims=[128],
+  input_dim=3,
+  encoding_dim=7,
+  h_dims=[64],
   h_activ=None,
   out_activ=None
 )
@@ -158,9 +158,9 @@ Note that the `model.decoder` module requires an argument in addition to a vecto
 ```python
 import torch
 
-x = torch.randn(10, 5)
-encoding = model.encoder(x)
-x_prime = model.decoder(encoding, seq_len=10)
+x = torch.randn(10, 3)
+z = model.encoder(x)
+x_prime = model.decoder(z, seq_len=10)
 ```
 
 #### RecurrentConvAE
