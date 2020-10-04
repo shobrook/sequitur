@@ -167,7 +167,7 @@ x_prime = model.decoder(z, seq_len=10)
 
 **`RecurrentConvAE(input_dims, encoding_dim, in_channels, h_conv_channels=[], h_lstm_channels=[], kernel=None, stride=None)`**
 
-Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-LSTM architecture described in the paper _[Beyond Short Snippets: Deep Networks for Video Classification](https://arxiv.org/pdf/1503.08909.pdf)._ Uses a CNN to create vector encodings of each image in an input sequence, and then an LSTM to create encodings of the sequence of vectors.
+Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-LSTM architecture described in _[Beyond Short Snippets: Deep Networks for Video Classification](https://arxiv.org/pdf/1503.08909.pdf)._ Uses a CNN to create vector encodings of each image in an input sequence, and then an LSTM to create encodings of the sequence of vectors.
 
 TODO: Make a diagram
 
