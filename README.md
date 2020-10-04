@@ -1,6 +1,6 @@
 # sequitur
 
-`sequitur` is a small library of autoencoders for different types of sequence data, ranging from sequences of numbers to sequences of images. It's built on PyTorch and very simple to use –– training and using an autoencoder takes only two lines of code:
+`sequitur` is a small library of autoencoders for different types of sequence data, ranging from sequences of numbers (e.g. time series) to sequences of images (e.g. videos). It's built on PyTorch and very simple to use –– training and using an autoencoder takes only two lines of code:
 
 ```python
 import torch
@@ -12,12 +12,12 @@ train_seqs = [
   torch.tensor([5, 6, 7, 8]),
   torch.tensor([9, 10, 11, 12])
 ]
-encoder, decoder, _, _ = quick_train(StackedAE, train_seqs, encoding_dim=2)
+encoder, decoder, _, _ = quick_train(StackedAE, train_seqs, encoding_dim=2, denoise=True)
 
 encoder(torch.tensor([13, 14, 15, 16])) # => torch.tensor([0.19, 0.84])
 ```
 
-Each autoencoder learns to represent input sequences as lower-dimensional, fixed-size vectors. This can be useful for finding patterns among sequences, clustering sequences, and converting sequences into inputs for other algorithms.
+Each autoencoder learns to represent input sequences as lower-dimensional, fixed-size vectors. This can be useful for finding patterns among sequences, clustering sequences, or converting sequences into inputs for other algorithms.
 
 <img src="./demo.png" />
 
@@ -39,7 +39,7 @@ How to choose an autoencoder depends on the nature of your data. If you're worki
 from sequitur.models import RecurrentConvAE
 ```
 
-Next, you need to prepare a set of sequences to train the autoencoder on. This training set should be a list of `torch.Tensor`s with shape `[num_examples, seq_len, *num_features]`. For example, if your training set consisted of 100 sequences, each with 10 5x5 matrices, then it would have shape `[100, 10, 5, 5]`. From here, you can either initialize the model yourself and write your own training loop, or import the `quick_train` function and plug in the model, training set, and desired encoding size, like so:
+Next, you need to prepare a set of example sequences to train the autoencoder on. This training set should be a list of `torch.Tensor`s, where each tensor has shape `[num_elements, *num_features]`. So, if each example in your training set was a sequence of 10 5x5 matrices, then each example would be a tensor with shape `[10, 5, 5]`.From here, you can either initialize the model yourself and write your own training loop, or import the `quick_train` function and plug in the model, training set, and desired encoding size, like so:
 
 ```python
 import torch
@@ -54,9 +54,8 @@ After training, `quick_train` returns the `encoder` and `decoder` models, which 
 
 ```python
 x = torch.randn(10, 5, 5)
-
-encoding = encoder(x) # Returns torch.Tensor of shape [4, ]
-x_prime = decoder(encoding) # Returns torch.Tensor of shape [10, 5, 5]
+h_x = encoder(x) # Tensor with shape [4]
+x_prime = decoder(h_x) # Tensor with shape [10, 5, 5]
 ```
 
 ## API
@@ -64,6 +63,8 @@ x_prime = decoder(encoding) # Returns torch.Tensor of shape [10, 5, 5]
 #### quick_train
 
 **`quick_train(model, train_set, encoding_dim, verbose=False, lr=1e-3, epochs=50, \*\*kwargs)`**
+
+TODO: Add a `denoise=True` parameter
 
 Lets you train an autoencoder with just one line of code. Useful if you don't want to create your own training loop. Training involves learning a vector encoding of each input sequence, reconstructing the original sequence from the encoding, and calculating the loss (mean-squared error) between the reconstructed input and the original input. The autoencoder weights are updated using the Adam optimizer.
 
@@ -96,8 +97,6 @@ Consists of fully-connected layers stacked on top of each other. Can only be use
 
 <img src="./stacked_ae.png" />
 
-TODO: Make your own diagram
-
 **Parameters:**
 
 - `input_dim` _(int)_: Size of each input sequence
@@ -129,8 +128,6 @@ model = StackedAE(
 Autoencoder for sequences of 1D vectors which consists of stacked LSTMs. Can be trained on sequences of varying length.
 
 <img src="./recurrent_ae.png" />
-
-TODO: Make your own diagram
 
 **Parameters:**
 
@@ -172,7 +169,7 @@ x_prime = model.decoder(encoding, seq_len=10)
 
 Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-LSTM architecture described in the paper _[Beyond Short Snippets: Deep Networks for Video Classification](https://arxiv.org/pdf/1503.08909.pdf)._ Uses a CNN to create vector encodings of each image in an input sequence, and then an LSTM to create encodings of the sequence of vectors.
 
-TODO: Add diagram
+TODO: Make a diagram
 
 **Parameters:**
 
