@@ -77,10 +77,10 @@ class Decoder(nn.Module):
 #########
 
 
-class RecurrentAE(nn.Module):
+class LSTM_AE(nn.Module):
     def __init__(self, input_dim, encoding_dim, h_dims=[], h_activ=nn.Sigmoid(),
                  out_activ=nn.Tanh()):
-        super(RecurrentAE, self).__init__()
+        super(LSTM_AE, self).__init__()
 
         self.encoder = Encoder(input_dim, encoding_dim, h_dims, h_activ,
                                out_activ)

@@ -4,7 +4,7 @@
 
 ```python
 import torch
-from sequitur.models import StackedAE
+from sequitur.models import LINEAR_AE
 from sequitur import quick_train
 
 train_seqs = [
@@ -12,7 +12,7 @@ train_seqs = [
   torch.tensor([5, 6, 7, 8]),
   torch.tensor([9, 10, 11, 12])
 ]
-encoder, decoder, _, _ = quick_train(StackedAE, train_seqs, encoding_dim=2, denoise=True)
+encoder, decoder, _, _ = quick_train(LINEAR_AE, train_seqs, encoding_dim=2, denoise=True)
 
 encoder(torch.tensor([13, 14, 15, 16])) # => torch.tensor([0.19, 0.84])
 ```
@@ -35,21 +35,21 @@ $ pip install sequitur
 
 First, you need to prepare a set of example sequences to train an autoencoder on. This training set should be a list of `torch.Tensor`s, where each tensor has shape `[num_elements, *num_features]`. So, if each example in your training set is a sequence of 10 5x5 matrices, then each example would be a tensor with shape `[10, 5, 5]`.
 
-Next, you need to choose an autoencoder model. If you're working with sequences of numbers (e.g. time series) or 1D vectors (e.g. word vectors), then you should use the `StackedAE` or `RecurrentAE` model. For sequences of 2D matrices (e.g. videos) or 3D matrices (e.g. fMRI scans), you'll want to use `RecurrentConvAE`. Each model is a PyTorch module, and can be imported like so:
+Next, you need to choose an autoencoder model. If you're working with sequences of numbers (e.g. time series) or 1D vectors (e.g. word vectors), then you should use the `LINEAR_AE` or `LSTM_AE` model. For sequences of 2D matrices (e.g. videos) or 3D matrices (e.g. fMRI scans), you'll want to use `CONV_LSTM_AE`. Each model is a PyTorch module, and can be imported like so:
 
 ```python
-from sequitur.models import RecurrentConvAE
+from sequitur.models import CONV_LSTM_AE
 ```
 
 From here, you can either initialize the model yourself and write your own training loop, or import the `quick_train` function and plug in the model, training set, and desired encoding size, like so:
 
 ```python
 import torch
-from sequitur.models import RecurrentConvAE
+from sequitur.models import CONV_LSTM_AE
 from sequitur import quick_train
 
 train_set = [torch.randn(10, 5, 5) for _ in range(100)]
-encoder, decoder, _, _ = quick_train(RecurrentConvAE, train_set, encoding_dim=4)
+encoder, decoder, _, _ = quick_train(CONV_LSTM_AE, train_set, encoding_dim=4)
 ```
 
 After training, `quick_train` returns the `encoder` and `decoder` models, which are PyTorch modules that can encode and decode new sequences. These can be used like so:
@@ -92,13 +92,13 @@ If `denoise=True`, then each input sequence is injected with Gaussian noise befo
 
 Every autoencoder inherits from `torch.nn.Module` and has an `encoder` attribute and a `decoder` attribute, both of which also inherit from `torch.nn.Module`.
 
-#### StackedAE
+#### LINEAR_AE
 
-**`StackedAE(input_dim, encoding_dim, h_dims=[], h_activ=torch.nn.Sigmoid(), out_activ=torch.nn.Tanh())`**
+**`LINEAR_AE(input_dim, encoding_dim, h_dims=[], h_activ=torch.nn.Sigmoid(), out_activ=torch.nn.Tanh())`**
 
 Consists of fully-connected layers stacked on top of each other. Can only be used if you're dealing with sequences of numbers, not vectors or matrices.
 
-<img src="./stacked_ae.png" />
+<img src="./linear_ae.png" />
 
 **Parameters:**
 
@@ -113,9 +113,9 @@ Consists of fully-connected layers stacked on top of each other. Can only be use
 To create the autoencoder shown in the diagram above, use the following arguments:
 
 ```python
-from sequitur.models import StackedAE
+from sequitur.models import LINEAR_AE
 
-model = StackedAE(
+model = LINEAR_AE(
   input_dim=10,
   encoding_dim=4,
   h_dims=[8, 6],
@@ -124,13 +124,13 @@ model = StackedAE(
 )
 ```
 
-#### RecurrentAE
+#### LSTM_AE
 
-**`RecurrentAE(input_dim, encoding_dim, h_dims=[], h_activ=torch.nn.Sigmoid(), out_activ=torch.nn.Tanh())`**
+**`LSTM_AE(input_dim, encoding_dim, h_dims=[], h_activ=torch.nn.Sigmoid(), out_activ=torch.nn.Tanh())`**
 
 Autoencoder for sequences of 1D vectors which consists of stacked LSTMs. Can be trained on sequences of varying length.
 
-<img src="./recurrent_ae.png" />
+<img src="./lstm_ae.png" />
 
 **Parameters:**
 
@@ -145,9 +145,9 @@ Autoencoder for sequences of 1D vectors which consists of stacked LSTMs. Can be 
 To create the autoencoder shown in the diagram above, use the following arguments:
 
 ```python
-from sequitur.models import RecurrentAE
+from sequitur.models import LSTM_AE
 
-model = RecurrentAE(
+model = LSTM_AE(
   input_dim=3,
   encoding_dim=7,
   h_dims=[64],
@@ -166,9 +166,9 @@ z = model.encoder(x)
 x_prime = model.decoder(z, seq_len=10)
 ```
 
-#### RecurrentConvAE
+#### CONV_LSTM_AE
 
-**`RecurrentConvAE(input_dims, encoding_dim, in_channels, h_conv_channels=[], h_lstm_channels=[], kernel=None, stride=None)`**
+**`CONV_LSTM_AE(input_dims, encoding_dim, in_channels, h_conv_channels=[], h_lstm_channels=[], kernel=None, stride=None)`**
 
 Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-LSTM architecture described in _[Beyond Short Snippets: Deep Networks for Video Classification](https://arxiv.org/pdf/1503.08909.pdf)._ Uses a CNN to create vector encodings of each image in an input sequence, and then an LSTM to create encodings of the sequence of vectors.
 
@@ -187,9 +187,9 @@ Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-
 **Example:**
 
 ```python
-from sequitur.models import RecurrentConvAE
+from sequitur.models import CONV_LSTM_AE
 
-model = RecurrentConvAE(
+model = CONV_LSTM_AE(
   input_dims=[5, 5],
   encoding_dim=16,
   in_channels=1,
@@ -197,5 +197,3 @@ model = RecurrentConvAE(
   stride=(1, 1),
 )
 ```
-
-QUESTION: LSTM_AE vs. RecurrentAE, CONV_LSTM_AE vs. RecurrentConvAE, MLP_AE vs. StackedAE?

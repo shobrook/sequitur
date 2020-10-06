@@ -2,8 +2,8 @@
 import torch.nn as nn
 
 # Local Modules
-from .RecurrentAE import RecurrentAE
-from .ConvAE import ConvAE
+from .lstm_ae import LSTM_AE
+from .conv_ae import CONV_AE
 
 
 ######
@@ -11,16 +11,15 @@ from .ConvAE import ConvAE
 ######
 
 
-class RecurrentConvAE(nn.Module):
-    def __init__(self, input_dims, encoding_dim, in_channels,
-                 h_conv_channels=[], h_lstm_channels=[], kernel=None,
-                 stride=None):
-        super(RecurrentConvAE, self).__init__()
+class CONV_LSTM_AE(nn.Module):
+    def __init__(self, input_dims, encoding_dim, in_channels=1, kernel=None,
+                 stride=None, h_conv_channels=[], h_lstm_channels=[]):
+        super(CONV_LSTM_AE, self).__init__()
 
         self.input_dims = input_dims
         self.conv_enc_dim = sum(input_dims) * in_channels
 
-        self.conv_ae = ConvAE(
+        self.conv_ae = CONV_AE(
             input_dims,
             self.conv_enc_dim,
             in_channels,
@@ -28,7 +27,7 @@ class RecurrentConvAE(nn.Module):
             kernel,
             stride
         )
-        self.recurrent_ae = RecurrentAE(
+        self.lstm_ae = LSTM_AE(
             self.conv_enc_dim,
             encoding_dim,
             h_lstm_channels
@@ -44,10 +43,10 @@ class RecurrentConvAE(nn.Module):
             ))
             encodings.append(self.conv_ae.encoder(element))
 
-        return self.recurrent_ae.encoder(torch.stack(encodings))
+        return self.lstm_ae.encoder(torch.stack(encodings))
 
     def decoder(self, x, seq_len):
-        encodings = self.recurrent_ae.decoder(torch.squeeze(x), seq_len)
+        encodings = self.lstm_ae.decoder(torch.squeeze(x), seq_len)
         decodings = []
         for i in range(seq_len):
             decodings.append(self.conv_ae.decoder(encodings[i]))

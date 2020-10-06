@@ -146,10 +146,10 @@ def compute_flattened_output_dim(out_dim, out_channels, dim):
 ######
 
 
-class ConvAE(nn.Module):
+class CONV_AE(nn.Module):
     def __init__(self, input_dims, encoding_dim, in_channels=1, h_channels=[],
                  kernel=None, stride=None):
-        super(ConvAE, self).__init__()
+        super(CONV_AE, self).__init__()
 
         # TODO: Handle kernel and/or stride == None
             # Automatically calculate maximum kernel_size and minimum stride
