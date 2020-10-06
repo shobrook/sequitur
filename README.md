@@ -1,6 +1,6 @@
 # sequitur
 
-`sequitur` is a small library of autoencoders for different types of sequence data, ranging from sequences of numbers (e.g. time series) to sequences of images (e.g. videos). It's built on PyTorch and very simple to use –– training and using an autoencoder takes only two lines of code:
+`sequitur` is a small library of [autoencoders](https://en.wikipedia.org/wiki/Autoencoder) for different types of sequence data, ranging from sequences of numbers (e.g. time series) to sequences of images (e.g. videos). It's built on PyTorch and very simple to use –– training and using an autoencoder takes only two lines of code:
 
 ```python
 import torch
@@ -64,7 +64,7 @@ x_prime = decoder(z) # Tensor with shape [10, 5, 5]
 
 #### quick_train
 
-**`quick_train(model, train_set, encoding_dim, verbose=False, lr=1e-3, epochs=50, denoise=False, **kwargs)`**
+**`quick_train(model, train_set, encoding_dim, verbose=False, lr=1e-3, epochs=50, denoise=False, **kwargs)`\*\*
 
 Lets you train an autoencoder with just one line of code. Useful if you don't want to create your own training loop. Training involves learning a vector encoding of each input sequence, reconstructing the original sequence from the encoding, and calculating the loss (mean-squared error) between the reconstructed input and the original input. The autoencoder weights are updated using the Adam optimizer.
 
