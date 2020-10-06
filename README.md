@@ -47,7 +47,7 @@ from sequitur.models import CONV_LSTM_AE
 
 More details about each model are in the "Models" section below.
 
-### 3. Train your autoencoder
+### 3. Train the autoencoder
 
 From here, you can either initialize the model yourself and write your own training loop, or import the `quick_train` function and plug in the model, training set, and desired encoding size, like so:
 
