@@ -33,13 +33,21 @@ $ pip install sequitur
 
 ## Getting Started
 
+### 1. Prepare your data
+
 First, you need to prepare a set of example sequences to train an autoencoder on. This training set should be a list of `torch.Tensor`s, where each tensor has shape `[num_elements, *num_features]`. So, if each example in your training set is a sequence of 10 5x5 matrices, then each example would be a tensor with shape `[10, 5, 5]`.
+
+### 2. Choose an autoencoder
 
 Next, you need to choose an autoencoder model. If you're working with sequences of numbers (e.g. time series) or 1D vectors (e.g. word vectors), then you should use the `LINEAR_AE` or `LSTM_AE` model. For sequences of 2D matrices (e.g. videos) or 3D matrices (e.g. fMRI scans), you'll want to use `CONV_LSTM_AE`. Each model is a PyTorch module, and can be imported like so:
 
 ```python
 from sequitur.models import CONV_LSTM_AE
 ```
+
+More details about each model are in the "Models" section below.
+
+### 3. Train your autoencoder
 
 From here, you can either initialize the model yourself and write your own training loop, or import the `quick_train` function and plug in the model, training set, and desired encoding size, like so:
 
