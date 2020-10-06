@@ -6,7 +6,7 @@ import torch
 from torch.nn import MSELoss
 
 # Local Modules
-from models import StackedAE, RecurrentAE, RecurrentConvAE
+from models import LINEAR_AE, LSTM_AE, CONV_LSTM_AE
 
 
 ###########
@@ -16,16 +16,17 @@ from models import StackedAE, RecurrentAE, RecurrentConvAE
 
 def instantiate_model(model, train_set, encoding_dim, **kwargs):
     # TODO: train_set is a list of tensors, not a tensor
-    if isinstance(model, (StackedAE, RecurrentAE)):
+    if isinstance(model, (LINEAR_AE, LSTM_AE)):
         return model(train_set.shape[-1], encoding_dim, **kwargs)
-    elif isinstance(model, RecurrentConvAE):
+    elif isinstance(model, CONV_LSTM_AE):
         # TODO: Handle in_channels != 1
         if len(train_set.shape) == 4: # 2D elements
             return model(train_set.shape[-2:], encoding_dim, )
         elif len(train_set.shape) == 5: # 3D elements
             return
 
-def train_model(model, train_set, verbose, lr, epochs):
+
+def train_model(model, train_set, verbose, lr, epochs, denoise):
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -76,9 +77,9 @@ def get_encodings(model, train_set):
 
 
 def quick_train(model, train_set, encoding_dim, verbose=False, lr=1e-3,
-                epochs=50, **kwargs):
+                epochs=50, denoise=False, **kwargs):
     model = instantiate_model(model, train_set, encoding_dim, **kwargs)
-    losses = train_model(model, train_set, verbose, lr, epochs)
+    losses = train_model(model, train_set, verbose, lr, epochs, denoise)
     encodings = get_encodings(model, train_set)
 
     return model.encoder, model.decoder, encodings, losses
