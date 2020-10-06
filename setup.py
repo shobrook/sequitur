@@ -14,10 +14,10 @@ with open("README.md", encoding="utf-8") as file:
 
 setup(
     name="sequitur",
-    description="Recurrent Autoencoder for sequence data that works out-of-the-box ",
+    description="Autoencoders for sequence data that work out-of-the-box",
     long_description=readme,
     long_description_content_type="text/markdown",
-    version="v1.0.2",
+    version="v1.1.0",
     packages=["sequitur"],
     python_requires=">=3",
     url="https://github.com/shobrook/sequitur",
