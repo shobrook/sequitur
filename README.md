@@ -62,7 +62,7 @@ x_prime = decoder(z) # Tensor with shape [10, 5, 5]
 
 ## API
 
-#### quick_train
+#### Training your Model
 
 **`quick_train(model, train_set, encoding_dim, verbose=False, lr=1e-3, epochs=50, denoise=False, **kwargs)`\*\*
 
@@ -92,7 +92,7 @@ If `denoise=True`, then each input sequence is injected with Gaussian noise befo
 
 Every autoencoder inherits from `torch.nn.Module` and has an `encoder` attribute and a `decoder` attribute, both of which also inherit from `torch.nn.Module`.
 
-#### LINEAR_AE
+#### Sequences of Numbers
 
 **`LINEAR_AE(input_dim, encoding_dim, h_dims=[], h_activ=torch.nn.Sigmoid(), out_activ=torch.nn.Tanh())`**
 
@@ -124,7 +124,7 @@ model = LINEAR_AE(
 )
 ```
 
-#### LSTM_AE
+#### Sequences of 1D Vectors
 
 **`LSTM_AE(input_dim, encoding_dim, h_dims=[], h_activ=torch.nn.Sigmoid(), out_activ=torch.nn.Tanh())`**
 
@@ -166,7 +166,7 @@ z = model.encoder(x)
 x_prime = model.decoder(z, seq_len=10)
 ```
 
-#### CONV_LSTM_AE
+#### Sequences of 2D/3D Matrices
 
 **`CONV_LSTM_AE(input_dims, encoding_dim, in_channels, h_conv_channels=[], h_lstm_channels=[], kernel=None, stride=None)`**
 
