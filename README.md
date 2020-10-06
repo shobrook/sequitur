@@ -33,13 +33,15 @@ $ pip install sequitur
 
 ## Getting Started
 
-How to choose an autoencoder depends on the nature of your data. If you're working with sequences of numbers (e.g. time series data) or 1D vectors (e.g. word vectors), then you should use the `StackedAE` or `RecurrentAE` model. For sequences of 2D matrices (e.g. videos) or 3D matrices (e.g. fMRI scans), you'll want to use `RecurrentConvAE`. Each model is a PyTorch module, and can be imported like so:
+First, you need to prepare a set of example sequences to train an autoencoder on. This training set should be a list of `torch.Tensor`s, where each tensor has shape `[num_elements, *num_features]`. So, if each example in your training set is a sequence of 10 5x5 matrices, then each example would be a tensor with shape `[10, 5, 5]`.
+
+Next, you need to choose an autoencoder model. If you're working with sequences of numbers (e.g. time series) or 1D vectors (e.g. word vectors), then you should use the `StackedAE` or `RecurrentAE` model. For sequences of 2D matrices (e.g. videos) or 3D matrices (e.g. fMRI scans), you'll want to use `RecurrentConvAE`. Each model is a PyTorch module, and can be imported like so:
 
 ```python
 from sequitur.models import RecurrentConvAE
 ```
 
-Next, you need to prepare a set of example sequences to train the autoencoder on. This training set should be a list of `torch.Tensor`s, where each tensor has shape `[num_elements, *num_features]`. So, if each example in your training set was a sequence of 10 5x5 matrices, then each example would be a tensor with shape `[10, 5, 5]`.From here, you can either initialize the model yourself and write your own training loop, or import the `quick_train` function and plug in the model, training set, and desired encoding size, like so:
+From here, you can either initialize the model yourself and write your own training loop, or import the `quick_train` function and plug in the model, training set, and desired encoding size, like so:
 
 ```python
 import torch
@@ -62,11 +64,11 @@ x_prime = decoder(z) # Tensor with shape [10, 5, 5]
 
 #### quick_train
 
-**`quick_train(model, train_set, encoding_dim, verbose=False, lr=1e-3, epochs=50, \*\*kwargs)`**
-
-TODO: Add a `denoise=True` parameter
+**`quick_train(model, train_set, encoding_dim, verbose=False, lr=1e-3, epochs=50, denoise=False, **kwargs)`\*\*
 
 Lets you train an autoencoder with just one line of code. Useful if you don't want to create your own training loop. Training involves learning a vector encoding of each input sequence, reconstructing the original sequence from the encoding, and calculating the loss (mean-squared error) between the reconstructed input and the original input. The autoencoder weights are updated using the Adam optimizer.
+
+If `denoise=True`, then each input sequence is injected with Gaussian noise before being fed into the autoencoder. The autoencoder is then trained to reconstruct the original undistorted input.
 
 **Parameters:**
 
@@ -76,11 +78,12 @@ Lets you train an autoencoder with just one line of code. Useful if you don't wa
 - `verbose` _(bool, optional (default=False))_: Whether or not to print the loss at each epoch
 - `lr` _(float, optional (default=1e-3))_: Learning rate
 - `epochs` _(int, optional (default=50))_: Number of epochs to train for
+- `denoise` _(bool, optional=(default=False))_: If `True`, converts autoencoder into a [Denoising Autoencoder (DAE)](https://en.wikipedia.org/wiki/Autoencoder#Regularized_Autoencoders)
 - `**kwargs`: Parameters to pass into `model` when it's instantiated
 
 **Returns:**
 
-- `encoder` _(torch.nn.Module)_: Trained encoder model; takes a sequence (as a tensor) as input and returns an encoding of the sequence as a tensor of shape `[encoding_dim, ]`
+- `encoder` _(torch.nn.Module)_: Trained encoder model; takes a sequence (as a tensor) as input and returns an encoding of the sequence as a tensor of shape `[encoding_dim]`
 - `decoder` _(torch.nn.Module)_: Trained decoder model; takes an encoding (as a tensor) and returns a decoded sequence
 - `encodings` _(list)_: List of tensors corresponding to the final vector encodings of each sequence in the training set
 - `losses` _(list)_: List of average MSE values at each epoch
@@ -169,7 +172,7 @@ x_prime = model.decoder(z, seq_len=10)
 
 Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-LSTM architecture described in _[Beyond Short Snippets: Deep Networks for Video Classification](https://arxiv.org/pdf/1503.08909.pdf)._ Uses a CNN to create vector encodings of each image in an input sequence, and then an LSTM to create encodings of the sequence of vectors.
 
-TODO: Make a diagram
+<img src="./conv_lstm_ae.png" />
 
 **Parameters:**
 
@@ -194,3 +197,5 @@ model = RecurrentConvAE(
   stride=(1, 1),
 )
 ```
+
+QUESTION: LSTM_AE vs. RecurrentAE, CONV_LSTM_AE vs. RecurrentConvAE, MLP_AE vs. StackedAE?
