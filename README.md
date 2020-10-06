@@ -19,7 +19,7 @@ encoder(torch.tensor([13, 14, 15, 16])) # => torch.tensor([0.19, 0.84])
 
 Each autoencoder learns to represent input sequences as lower-dimensional, fixed-size vectors. This can be useful for finding patterns among sequences, clustering sequences, or converting sequences into inputs for other algorithms.
 
-<img src="./demo.png" />
+<img src="./img/demo.png" />
 
 ## Installation
 
@@ -98,7 +98,7 @@ Every autoencoder inherits from `torch.nn.Module` and has an `encoder` attribute
 
 Consists of fully-connected layers stacked on top of each other. Can only be used if you're dealing with sequences of numbers, not vectors or matrices.
 
-<img src="./linear_ae.png" />
+<img src="./img/linear_ae.png" />
 
 **Parameters:**
 
@@ -130,7 +130,7 @@ model = LINEAR_AE(
 
 Autoencoder for sequences of 1D vectors which consists of stacked LSTMs. Can be trained on sequences of varying length.
 
-<img src="./lstm_ae.png" />
+<img src="./img/lstm_ae.png" />
 
 **Parameters:**
 
@@ -172,7 +172,7 @@ x_prime = model.decoder(z, seq_len=10)
 
 Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-LSTM architecture described in _[Beyond Short Snippets: Deep Networks for Video Classification](https://arxiv.org/pdf/1503.08909.pdf)._ Uses a CNN to create vector encodings of each image in an input sequence, and then an LSTM to create encodings of the sequence of vectors.
 
-<img src="./conv_lstm_ae.png" />
+<img src="./img/conv_lstm_ae.png" />
 
 **Parameters:**
 
