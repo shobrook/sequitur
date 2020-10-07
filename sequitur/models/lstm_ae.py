@@ -72,9 +72,9 @@ class Decoder(nn.Module):
         return torch.mm(x.squeeze(), self.dense_matrix)
 
 
-#########
-# EXPORTS
-#########
+######
+# MAIN
+######
 
 
 class LSTM_AE(nn.Module):

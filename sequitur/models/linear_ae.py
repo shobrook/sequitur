@@ -51,9 +51,9 @@ class Decoder(nn.Module):
         return self.nn(x)
 
 
-#########
-# EXPORTS
-#########
+######
+# MAIN
+######
 
 
 class LINEAR_AE(nn.Module):
