@@ -17,7 +17,7 @@ setup(
     description="Autoencoders for sequence data that work out-of-the-box",
     long_description=readme,
     long_description_content_type="text/markdown",
-    version="v1.1.1",
+    version="v1.2.1",
     packages=["sequitur"],
     python_requires=">=3",
     url="https://github.com/shobrook/sequitur",
