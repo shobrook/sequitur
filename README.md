@@ -76,7 +76,7 @@ x_prime = decoder(z) # Tensor with shape [10, 5, 5]
 
 Lets you train an autoencoder with just one line of code. Useful if you don't want to create your own training loop. Training involves learning a vector encoding of each input sequence, reconstructing the original sequence from the encoding, and calculating the loss (mean-squared error) between the reconstructed input and the original input. The autoencoder weights are updated using the Adam optimizer.
 
-If `denoise=True`, then each input sequence is injected with Gaussian noise before being fed into the autoencoder. The autoencoder is then trained to reconstruct the original undistorted input.
+<!--If `denoise=True`, then each input sequence is injected with Gaussian noise before being fed into the autoencoder. The autoencoder is then trained to reconstruct the original undistorted input.-->
 
 **Parameters:**
 
@@ -86,7 +86,7 @@ If `denoise=True`, then each input sequence is injected with Gaussian noise befo
 - `verbose` _(bool, optional (default=False))_: Whether or not to print the loss at each epoch
 - `lr` _(float, optional (default=1e-3))_: Learning rate
 - `epochs` _(int, optional (default=50))_: Number of epochs to train for
-- `denoise` _(bool, optional=(default=False))_: If `True`, converts autoencoder into a [Denoising Autoencoder (DAE)](https://en.wikipedia.org/wiki/Autoencoder#Regularized_Autoencoders)
+<!--- `denoise` _(bool, optional=(default=False))_: If `True`, converts autoencoder into a [Denoising Autoencoder (DAE)](https://en.wikipedia.org/wiki/Autoencoder#Regularized_Autoencoders)-->
 - `**kwargs`: Parameters to pass into `model` when it's instantiated
 
 **Returns:**
@@ -130,13 +130,17 @@ model = LINEAR_AE(
   h_activ=None,
   out_activ=None
 )
+
+x = torch.randn(10) # Sequence of 10 numbers
+z = model.encoder(x) # z.shape = [4]
+x_prime = model.decoder(z) # x_prime.shape = [10]
 ```
 
 #### Sequences of 1D Vectors
 
 **`LSTM_AE(input_dim, encoding_dim, h_dims=[], h_activ=torch.nn.Sigmoid(), out_activ=torch.nn.Tanh())`**
 
-Autoencoder for sequences of 1D vectors which consists of stacked LSTMs. Can be trained on sequences of varying length.
+Autoencoder for sequences of vectors which consists of stacked LSTMs. Can be trained on sequences of varying length.
 
 <img src="./img/lstm_ae.png" />
 
@@ -162,21 +166,15 @@ model = LSTM_AE(
   h_activ=None,
   out_activ=None
 )
-```
 
-Note that the `model.decoder` module requires an argument in addition to a vector encoding, `seq_len`, to decode a sequence. For example:
-
-```python
-import torch
-
-x = torch.randn(10, 3)
-z = model.encoder(x)
-x_prime = model.decoder(z, seq_len=10)
+x = torch.randn(10, 3) # Sequence of 10 3D vectors
+z = model.encoder(x) # z.shape = [7]
+x_prime = model.decoder(z, seq_len=10) # x_prime.shape = [10, 3]
 ```
 
 #### Sequences of 2D/3D Matrices
 
-**`CONV_LSTM_AE(input_dims, encoding_dim, in_channels, h_conv_channels=[], h_lstm_channels=[], kernel=None, stride=None)`**
+**`CONV_LSTM_AE(input_dims, encoding_dim, kernel, stride=1, h_conv_channels=[1], h_lstm_channels=[])`**
 
 Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-LSTM architecture described in _[Beyond Short Snippets: Deep Networks for Video Classification](https://arxiv.org/pdf/1503.08909.pdf)._ Uses a CNN to create vector encodings of each image in an input sequence, and then an LSTM to create encodings of the sequence of vectors.
 
@@ -184,12 +182,11 @@ Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-
 
 **Parameters:**
 
-- `input_dims` _(list)_: Shape of each 2D or 3D image in the input sequences
+- `input_dims` _(tuple)_: Shape of each 2D or 3D image in the input sequences
 - `encoding_dim` _(int)_: Size of the vector encoding
-- `in_channels` _(int)_: Number of channels in each image
-- `kernel` _(tuple or None, optional (default=None))_: TODO
-- `stride` _(tuple or None, optional (default=None))_: TODO
-- `h_conv_channels` _(list, optional (default=[]))_: List of hidden channel sizes for the convolutional layers
+- `kernel` _(int or tuple)_: Size of the convolving kernel; use tuple to specify a different size for each dimension
+- `stride` _(int or tuple, optional (default=1))_: Stride of the convolution; use tuple to specify a different stride for each dimension
+- `h_conv_channels` _(list, optional (default=[1]))_: List of hidden channel sizes for the convolutional layers
 - `h_lstm_channels` _(list, optional (default=[]))_: List of hidden channel sizes for the LSTM layers
 
 **Example:**
@@ -198,10 +195,15 @@ Autoencoder for sequences of 2D or 3D matrices/images, loosely based on the CNN-
 from sequitur.models import CONV_LSTM_AE
 
 model = CONV_LSTM_AE(
-  input_dims=[5, 5],
+  input_dims=(50, 100),
   encoding_dim=16,
-  in_channels=1,
-  kernel=(2, 2),
-  stride=(1, 1),
+  kernel=(5, 8),
+  stride=(3, 5),
+  h_conv_channels=[4, 8],
+  h_lstm_channels=[32, 64]
 )
+
+x = torch.randn(22, 50, 100) # Sequence of 22 50x100 images
+z = model.encoder(x) # z.shape = [16]
+x_prime = model.decoder(z, seq_len=22) # x_prime.shape = [22, 50, 100]
 ```
