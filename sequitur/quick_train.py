@@ -6,7 +6,7 @@ import torch
 from torch.nn import MSELoss
 
 # Local Modules
-from .models import LINEAR_AE, LSTM_AE, CONV_LSTM_AE
+from sequitur.models import LINEAR_AE, LSTM_AE, CONV_LSTM_AE
 
 
 ###########
