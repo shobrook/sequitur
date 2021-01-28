@@ -5,9 +5,6 @@ from statistics import mean
 import torch
 from torch.nn import MSELoss
 
-# Local Modules
-from sequitur.models import LINEAR_AE, LSTM_AE, CONV_LSTM_AE
-
 
 ###########
 # UTILITIES
@@ -15,15 +12,13 @@ from sequitur.models import LINEAR_AE, LSTM_AE, CONV_LSTM_AE
 
 
 def instantiate_model(model, train_set, encoding_dim, **kwargs):
-    # TODO: train_set is a list of tensors, not a tensor
-    if isinstance(model, (LINEAR_AE, LSTM_AE)):
-        return model(train_set.shape[-1], encoding_dim, **kwargs)
-    elif isinstance(model, CONV_LSTM_AE):
-        # TODO: Handle in_channels != 1
-        if len(train_set.shape) == 4: # 2D elements
-            return model(train_set.shape[-2:], encoding_dim, )
-        elif len(train_set.shape) == 5: # 3D elements
-            return
+    if model.__name__ in ("LINEAR_AE", "LSTM_AE"):
+        return model(train_set[-1].shape[-1], encoding_dim, **kwargs)
+    elif model.__name__ == "CONV_LSTM_AE":
+        if len(train_set[-1].shape) == 3: # 2D elements
+            return model(train_set[-1].shape[-2:], encoding_dim, **kwargs)
+        elif len(train_set[-1].shape) == 4: # 3D elements
+            return model(train_set[-1].shape[-3:], encoding_dim, **kwargs)
 
 
 def train_model(model, train_set, verbose, lr, epochs, denoise):
