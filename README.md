@@ -7,14 +7,10 @@ import torch
 from sequitur.models import LINEAR_AE
 from sequitur import quick_train
 
-train_seqs = [
-  torch.tensor([1, 2, 3, 4]),
-  torch.tensor([5, 6, 7, 8]),
-  torch.tensor([9, 10, 11, 12])
-]
+train_seqs = [torch.randn(4) for _ in range(100)] # 100 sequences of length 4
 encoder, decoder, _, _ = quick_train(LINEAR_AE, train_seqs, encoding_dim=2, denoise=True)
 
-encoder(torch.tensor([13, 14, 15, 16])) # => torch.tensor([0.19, 0.84])
+encoder(torch.randn(4)) # => torch.tensor([0.19, 0.84])
 ```
 
 Each autoencoder learns to represent input sequences as lower-dimensional, fixed-size vectors. This can be useful for finding patterns among sequences, clustering sequences, or converting sequences into inputs for other algorithms.
