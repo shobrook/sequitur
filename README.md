@@ -1,6 +1,6 @@
 # sequitur
 
-`sequitur` is a small library of [autoencoders](https://en.wikipedia.org/wiki/Autoencoder) for different types of sequence data, ranging from sequences of numbers (e.g. time series) to sequences of images (e.g. videos). It's built on PyTorch and very simple to use –– training and using an autoencoder takes only two lines of code:
+`sequitur` is a library that lets you create and train an autoencoder for sequential data in just two lines of code. It implements three different autoencoder architectures in PyTorch, and a predefined training loop. `sequitur` is ideal for working with sequential data ranging from single and multivariate time series to videos, and is geared for those who want to get started _quickly_ with autoencoders.
 
 ```python
 import torch
