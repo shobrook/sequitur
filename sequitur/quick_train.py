@@ -15,17 +15,18 @@ def instantiate_model(model, train_set, encoding_dim, **kwargs):
     if model.__name__ in ("LINEAR_AE", "LSTM_AE"):
         return model(train_set[-1].shape[-1], encoding_dim, **kwargs)
     elif model.__name__ == "CONV_LSTM_AE":
-        if len(train_set[-1].shape) == 3: # 2D elements
+        if len(train_set[-1].shape) == 3:  # 2D elements
             return model(train_set[-1].shape[-2:], encoding_dim, **kwargs)
-        elif len(train_set[-1].shape) == 4: # 3D elements
+        elif len(train_set[-1].shape) == 4:  # 3D elements
             return model(train_set[-1].shape[-3:], encoding_dim, **kwargs)
 
 
-def train_model(model, train_set, verbose, lr, epochs, denoise):
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # model.to(device)
+def train_model(model, train_set, verbose, lr, epochs, denoise, device=None):
+    if device is None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    criterion = MSELoss(size_average=False)
+    criterion = MSELoss(reduction="sum")
 
     mean_losses = []
     for epoch in range(1, epochs + 1):
@@ -38,6 +39,7 @@ def train_model(model, train_set, verbose, lr, epochs, denoise):
 
         losses = []
         for x in train_set:
+            x = x.to(device)
             optimizer.zero_grad()
 
             # Forward pass
@@ -71,8 +73,16 @@ def get_encodings(model, train_set):
 ######
 
 
-def quick_train(model, train_set, encoding_dim, verbose=False, lr=1e-3,
-                epochs=50, denoise=False, **kwargs):
+def quick_train(
+    model,
+    train_set,
+    encoding_dim,
+    verbose=False,
+    lr=1e-3,
+    epochs=50,
+    denoise=False,
+    **kwargs,
+):
     model = instantiate_model(model, train_set, encoding_dim, **kwargs)
     losses = train_model(model, train_set, verbose, lr, epochs, denoise)
     encodings = get_encodings(model, train_set)
