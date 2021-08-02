@@ -98,8 +98,10 @@ def quick_train(
     device=None,
     **kwargs,
 ):
-    model = instantiate_model(model, train_set, encoding_dim, device, **kwargs)
-    losses = train_model(model, train_set, verbose, lr, epochs, denoise, clip_value)
+    model = instantiate_model(model, train_set, encoding_dim, **kwargs)
+    losses = train_model(
+        model, train_set, verbose, lr, epochs, denoise, clip_value, device
+    )
     encodings = get_encodings(model, train_set, device)
 
     return model.encoder, model.decoder, encodings, losses
