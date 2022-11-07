@@ -20,7 +20,7 @@ class Encoder(nn.Module):
                 input_size=layer_dims[index],
                 hidden_size=layer_dims[index + 1],
                 num_layers=1,
-                batch_first=True
+                batch_first=True,
             )
             self.layers.append(layer)
 
@@ -51,14 +51,13 @@ class Decoder(nn.Module):
                 input_size=layer_dims[index],
                 hidden_size=layer_dims[index + 1],
                 num_layers=1,
-                batch_first=True
+                batch_first=True,
             )
             self.layers.append(layer)
 
         self.h_activ = h_activ
         self.dense_matrix = nn.Parameter(
-            torch.rand((layer_dims[-1], out_dim), dtype=torch.float),
-            requires_grad=True
+            torch.rand((layer_dims[-1], out_dim), dtype=torch.float), requires_grad=True
         )
 
     def forward(self, x, seq_len):
@@ -69,7 +68,7 @@ class Decoder(nn.Module):
             if self.h_activ and index < self.num_layers - 1:
                 x = self.h_activ(x)
 
-        return torch.mm(x.squeeze(), self.dense_matrix)
+        return torch.mm(x.squeeze(0), self.dense_matrix)
 
 
 ######
@@ -78,14 +77,18 @@ class Decoder(nn.Module):
 
 
 class LSTM_AE(nn.Module):
-    def __init__(self, input_dim, encoding_dim, h_dims=[], h_activ=nn.Sigmoid(),
-                 out_activ=nn.Tanh()):
+    def __init__(
+        self,
+        input_dim,
+        encoding_dim,
+        h_dims=[],
+        h_activ=nn.Sigmoid(),
+        out_activ=nn.Tanh(),
+    ):
         super(LSTM_AE, self).__init__()
 
-        self.encoder = Encoder(input_dim, encoding_dim, h_dims, h_activ,
-                               out_activ)
-        self.decoder = Decoder(encoding_dim, input_dim, h_dims[::-1],
-                               h_activ)
+        self.encoder = Encoder(input_dim, encoding_dim, h_dims, h_activ, out_activ)
+        self.decoder = Decoder(encoding_dim, input_dim, h_dims[::-1], h_activ)
 
     def forward(self, x):
         seq_len = x.shape[0]
