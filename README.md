@@ -17,6 +17,10 @@ Each autoencoder learns to represent input sequences as lower-dimensional, fixed
 
 <img src="./img/demo.png" />
 
+#### Cited in
+
+[AgriSen-COG, a Multicountry, Multitemporal Large-Scale Sentinel-2 Benchmark Dataset for Crop Mapping Using Deep Learning](https://mdpi-res.com/d_attachment/remotesensing/remotesensing-15-02980/article_deploy/remotesensing-15-02980.pdf)
+
 ## Installation
 
 > Requires Python 3.X and PyTorch 1.2.X
