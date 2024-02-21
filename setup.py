@@ -14,7 +14,7 @@ with open("README.md", encoding="utf-8") as file:
 
 setup(
     name="sequitur",
-    description="Autoencoders for sequential data",
+    description="Plug-and-play autoencoders for sequential data",
     long_description=readme,
     long_description_content_type="text/markdown",
     version="v1.2.4",
