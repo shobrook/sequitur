@@ -35,7 +35,7 @@ $ pip install sequitur
 
 ### 1. Prepare your data
 
-First, you need to prepare a set of example sequences to train an autoencoder on. This training set should be a list of `torch.Tensor`s, where each tensor has shape `[num_elements, *num_features]`. So, if each example in your training set is a sequence of 10 5x5 matrices, then each example would be a tensor with shape `[10, 5, 5]`.
+First, you need to prepare a set of example sequences to train an autoencoder on. This training set should be a list of `torch.Tensor` objects, where each tensor has shape `[num_elements, *num_features]`. So, if each example in your training set is a sequence of 10 5x5 matrices, then each example would be a tensor with shape `[10, 5, 5]`.
 
 ### 2. Choose an autoencoder
 
