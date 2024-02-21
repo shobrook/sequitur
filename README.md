@@ -74,7 +74,7 @@ x_prime = decoder(z) # Tensor with shape [10, 5, 5]
 
 **`quick_train(model, train_set, encoding_dim, verbose=False, lr=1e-3, epochs=50, denoise=False, **kwargs)`**
 
-Lets you train an autoencoder with just one line of code. Useful if you don't want to create your own training loop. Training involves learning a vector encoding of each input sequence, reconstructing the original sequence from the encoding, and calculating the loss (mean-squared error) between the reconstructed input and the original input. The autoencoder weights are updated using the Adam optimizer.
+Lets you train an autoencoder with just one line of code. This is useful if you don't want to create your own training loop. Training involves learning a vector encoding of each input sequence, reconstructing the original sequence from the encoding, and calculating the loss (mean-squared error) between the reconstructed input and the original input. The autoencoder weights are updated using the Adam optimizer.
 
 <!--If `denoise=True`, then each input sequence is injected with Gaussian noise before being fed into the autoencoder. The autoencoder is then trained to reconstruct the original undistorted input.-->
 
